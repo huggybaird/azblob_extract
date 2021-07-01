@@ -1,0 +1,13 @@
+{
+  "scriptFile": "__init__.py",
+  "bindings": [
+    {
+      "type": "eventGridTrigger",
+      "name": "event",
+      "direction": "in",
+      "path": "test/{name}",
+      "source": "EventGrid",
+      "connection": "arongkstorageacc_STORAGE"
+    }
+  ]
+}
