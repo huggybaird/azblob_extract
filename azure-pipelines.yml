@@ -6,7 +6,7 @@ variables:
 - name: azureSubscription
   value: 'b6b2f9dd-810a-4b1c-803b-c3cebf0e3d09'
 - name: functionAppName
-  value: 'HttpGetTarFileToUnTarAnand'
+  value: 'azextractfunctionapp'
 - name: vmImageName
   value: 'ubuntu-latest'
 - name: workingDirectory
