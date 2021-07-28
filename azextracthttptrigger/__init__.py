@@ -10,7 +10,7 @@ import time
 import traceback
 from azure.storage.blob import BlobServiceClient
 
-
+# test comment updated2
 STATUS_CONTAINER = 'status'
 AUDIT_CONTAINER = 'audit'
 SOURCE_CONTAINER = 'source'
