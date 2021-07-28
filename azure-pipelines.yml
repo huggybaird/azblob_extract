@@ -11,7 +11,7 @@ variables:
   azureSubscription: 'd7ed483e-40ba-449a-a541-f576de639743'
 
   # Function app name
-  functionAppName: 'azextractfunctionapp'
+  functionAppName: 'HttpHelloWorldTrigger'
 
   # Agent VM image name
   vmImageName: 'ubuntu-latest'
