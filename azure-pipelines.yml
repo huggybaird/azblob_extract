@@ -8,10 +8,10 @@ trigger:
 
 variables:
   # Azure Resource Manager connection created during pipeline creation
-  azureSubscription: 'd7ed483e-40ba-449a-a541-f576de639743'
+  azureSubscription: '3897b0f8-a42b-4939-9e30-2903d249703c'
 
   # Function app name
-  functionAppName: 'HttpHelloWorldTrigger'
+  functionAppName: 'azextractfunctionapp'
 
   # Agent VM image name
   vmImageName: 'ubuntu-latest'
