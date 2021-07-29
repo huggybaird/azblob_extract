@@ -7,6 +7,7 @@ ACCOUNT_URL = "https://arongkstorageacc.blob.core.windows.net/"
 CREDENTIAL = "8c4PujlNq2zxpca3gWcrLAam8iwEwditRTnMML/96c7FZI0T918Q8Pahxcu4sia6K8jaDRXiwj1AHR//Q270yQ=="
 DESTINATION_CONTAINER = "dest"
 
+
 def get_file_name(path):
     last_indes_of_slash = path.rindex("/")
     if last_indes_of_slash == -1:
