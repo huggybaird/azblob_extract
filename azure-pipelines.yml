@@ -39,9 +39,9 @@ stages:
       displayName: 'Build extensions'
 
     - task: UsePythonVersion@0
-      displayName: 'Use Python 3.9'
+      displayName: 'Use Python 3.6'
       inputs:
-        versionSpec: 3.9
+        versionSpec: 3.6
 
     - bash: |
         pip install --target="./.python_packages/lib/site-packages" -r ./requirements.txt
