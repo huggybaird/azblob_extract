@@ -11,7 +11,7 @@ variables:
   azureSubscription: '3897b0f8-a42b-4939-9e30-2903d249703c'
 
   # Function app name
-  functionAppName: 'azextractfunctionapp'
+  functionAppName: 'azextractapp'
 
   # Agent VM image name
   vmImageName: 'ubuntu-latest'
@@ -39,9 +39,9 @@ stages:
       displayName: 'Build extensions'
 
     - task: UsePythonVersion@0
-      displayName: 'Use Python 3.9'
+      displayName: 'Use Python 3.6'
       inputs:
-        versionSpec: 3.9 # Functions V2 supports Python 3.9 as of today
+        versionSpec: 3.6
 
     - bash: |
         pip install --target="./.python_packages/lib/site-packages" -r ./requirements.txt
