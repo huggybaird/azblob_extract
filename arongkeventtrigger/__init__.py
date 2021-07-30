@@ -174,7 +174,6 @@ def main(event: func.EventGridEvent):
         'subject': event.subject,
         'event_type': event.event_type,
     })
-    
     logging.info('Python EventGrid trigger processed an event: %s', result)
     if is_source_container(event):
         blob_config = BlobConfig(event=event)
