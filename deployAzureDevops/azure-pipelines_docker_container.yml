@@ -1,0 +1,91 @@
+trigger:
+  branches:
+    include:
+    - main
+variables:
+- name: azureSubscription
+  value: '48caedec-40ba-4c3a-a124-4efe2740c098'
+- name: functionAppName
+  value: 'httpcontainerfunction'
+- name: resourceGroupName
+  value: 'httpcontainerfunctionRG'
+- name: containerRegistry
+  value: 'azblobextract.azurecr.io'
+- name: imageRepository
+  value: 'ubuntu'
+- name: tag
+  value: '18.04'
+- name: slotName
+  value: 'production'
+- name: vmImageName
+  value: 'ubuntu-18.04'
+- name: workingDirectory
+  value: '$(System.DefaultWorkingDirectory)/'
+stages:
+- stage: Build
+  displayName: Build stage
+  jobs:
+  - job: Build
+    displayName: Build
+    pool:
+      vmImage: $(vmImageName)
+    steps:
+    - task: Bash@3
+      displayName: 'Build extensions'
+      inputs:
+        targetType: inline
+        script: |
+          if [ -f extensions.csproj ]
+          then
+              dotnet build extensions.csproj --runtime ubuntu.16.04-x64 --output ./bin
+          fi
+        workingDirectory: $(workingDirectory)
+    - task: UsePythonVersion@0
+      displayName: 'Use Python 3.6'
+      inputs:
+        versionSpec: 3.6
+    - task: Bash@3
+      displayName: 'Install application dependencies'
+      inputs:
+        targetType: inline
+        script: |
+          pip install --target="./.python_packages/lib/site-packages" -r ./requirements.txt
+        workingDirectory: $(workingDirectory)
+    - task: ArchiveFiles@2
+      displayName: 'Archive files'
+      inputs:
+        rootFolderOrFile: '$(workingDirectory)'
+        includeRootFolder: false
+        archiveType: zip
+        archiveFile: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
+        replaceExistingArchive: true
+    - task: ecdc45f6-832d-4ad9-b52b-ee49e94659be@1
+      inputs:
+        path: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
+        artifactName: drop
+- stage: Deploy
+  displayName: Deploy stage
+  dependsOn:
+  - Build
+  condition: succeeded()
+  jobs:
+  - deployment: Deploy
+    displayName: Deploy
+    environment:
+      name: 'development'
+    pool:
+      vmImage: $(vmImageName)
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: AzureFunctionAppContainer@1
+            displayName: 'Azure functions app deploy to container'
+            inputs:
+              azureSubscription: $(azureSubscription)
+              appName: $(functionAppName)
+              deployToSlotOrASE: true
+              resourceGroupName: $(resourceGroupName)
+              slotName: $(slotName)
+              imageName: $(containerRegistry)/$(imageRepository):$(tag)
+
