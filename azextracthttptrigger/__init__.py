@@ -1,15 +1,16 @@
 import asyncio
 import azure.functions as func
-import json
 import logging
 import os
 import shutil
 import tarfile
 import tempfile
+import threading
 import time
 import traceback
 from azure.storage.blob import BlobServiceClient
 
+# test comment updated2
 STATUS_CONTAINER = 'status'
 AUDIT_CONTAINER = 'audit'
 SOURCE_CONTAINER = 'source'
@@ -20,9 +21,9 @@ CHUNK_SIZE = 50 * 1024 * 1024
 
 class BlobConfig():
 
-    def __init__(self, event):
-        self.blob_name = self.get_blob_name(event)
-        self.contentLength = self.get_content_length(event)
+    def __init__(self, blob_name, content_length):
+        self.blob_name = blob_name
+        self.content_length = int(content_length)
 
     def setup_files(self):
         self.temp_folder = tempfile.gettempdir()
@@ -78,7 +79,7 @@ class BlobClientFacade():
         logging.info("Started downloading " + self.config.blob_name )
         blobClient = self.service.get_blob_client(container=container, blob=self.config.blob_name)
         with open(self.config.tar_path, "wb") as my_blob:
-            bytesRemaining = self.config.contentLength
+            bytesRemaining = self.config.content_length
             start = 0
             while bytesRemaining > 0:
                 logging.info("bytesRemaining " + str(bytesRemaining))
@@ -150,7 +151,7 @@ def extract_all(blobClientFacade):
     else:
         logging.info("The uploaded file [" + config.blob_name + "] is not a tar file.")
 
-async def extract_tar_file(blobClientFacade):
+def extract_tar_file(blobClientFacade):
     try:
         config = blobClientFacade.config
         blobClientFacade.download_blob(SOURCE_CONTAINER)
@@ -166,23 +167,19 @@ async def extract_tar_file(blobClientFacade):
 async def start(blobClientFacade):
     asyncio.create_task(extract_tar_file(blobClientFacade))
 
-def main(event: func.EventGridEvent):
-    result = json.dumps({
-        'id': event.id,
-        'data': event.get_json(),
-        'topic': event.topic,
-        'subject': event.subject,
-        'event_type': event.event_type,
-    })
-    logging.info('Python EventGrid trigger processed an event: %s', result)
-    if is_source_container(event):
-        blob_config = BlobConfig(event=event)
-        blobClientFacade = BlobClientFacade(blob_config=blob_config)
-        if not blobClientFacade.has_execution_started():
-            blob_config.setup_files()
-            blobClientFacade.save_runtime_blob()
-            asyncio.run(start(blobClientFacade))
-        else:
-            logging.info('Skipped executing, execution is already in progress: %s', blob_config.blob_name)
-    logging.info('Done untarring using event grid: %s', blob_config.blob_name)
+def main(req: func.HttpRequest) -> func.HttpResponse:
+    logging.info('Python HTTP trigger function processed a request.')
 
+    blob_name = req.form.get('name')
+    content_length = req.form.get('content-length')
+    blob_config = BlobConfig(blob_name, content_length)
+    blobClientFacade = BlobClientFacade(blob_config=blob_config)
+    if not blobClientFacade.has_execution_started():
+        blob_config.setup_files()
+        blobClientFacade.save_runtime_blob()
+        thread = threading.Thread(target=extract_tar_file, args=(blobClientFacade,))
+        thread.start()
+        return func.HttpResponse("SUCCESS", status_code=200)
+    else:
+        logging.info('Skipped executing, execution is already in progress: %s', blob_config.blob_name)
+        return func.HttpResponse("ALREADY_IN_PROGRESS", status_code=200)
