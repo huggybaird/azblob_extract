@@ -1,16 +1,26 @@
 trigger:
   branches:
     include:
-    - master
+    - main
 variables:
 - name: azureSubscription
-  value: 'b6b2f9dd-810a-4b1c-803b-c3cebf0e3d09'
+  value: '48caedec-40ba-4c3a-a124-4efe2740c098'
 - name: functionAppName
-  value: 'HttpGetTarFileToUnTarAnand'
+  value: 'httpcontainerfunction'
+- name: resourceGroupName
+  value: 'httpcontainerfunctionRG'
+- name: containerRegistry
+  value: 'azblobextract.azurecr.io'
+- name: imageRepository
+  value: 'ubuntu'
+- name: tag
+  value: '18.04'
+- name: slotName
+  value: 'production'
 - name: vmImageName
-  value: 'ubuntu-latest'
+  value: 'ubuntu-18.04'
 - name: workingDirectory
-  value: '$(System.DefaultWorkingDirectory)'
+  value: '$(System.DefaultWorkingDirectory)/'
 stages:
 - stage: Build
   displayName: Build stage
@@ -31,9 +41,9 @@ stages:
           fi
         workingDirectory: $(workingDirectory)
     - task: UsePythonVersion@0
-      displayName: 'Use Python 3.8'
+      displayName: 'Use Python 3.6'
       inputs:
-        versionSpec: 3.8
+        versionSpec: 3.6
     - task: Bash@3
       displayName: 'Install application dependencies'
       inputs:
@@ -69,11 +79,13 @@ stages:
       runOnce:
         deploy:
           steps:
-          - task: AzureFunctionApp@1
-            displayName: 'Azure functions app deploy'
+          - task: AzureFunctionAppContainer@1
+            displayName: 'Azure functions app deploy to container'
             inputs:
-              azureSubscription: '$(azureSubscription)'
-              appType: functionAppLinux
+              azureSubscription: $(azureSubscription)
               appName: $(functionAppName)
-              package: '$(Pipeline.Workspace)/drop/$(Build.BuildId).zip'
+              deployToSlotOrASE: true
+              resourceGroupName: $(resourceGroupName)
+              slotName: $(slotName)
+              imageName: $(containerRegistry)/$(imageRepository):$(tag)
 
