@@ -1,0 +1,17 @@
+Powershell command to import docker image to azure container Registry
+
+-> az login
+-> az acr login --name azblobextract
+
+You can perform manual login using the provided access token below, for example: 'docker login loginServer -u 00000000-0000-0000-0000-000000000000 -p accessToken'
+
+-> az acr login --n azblobextract --expose-token
+
+TRY THIS:
+az acr import --name MyRegistry --source docker.io/library/hello-world:latest --image targetrepository:targettag
+Import an image from a public repository on Docker Hub. The image uses the specified repository and tag names.
+
+az acr import --name MyRegistry --source sourcerepository:sourcetag --image targetrepository:targettag --registry /subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/sourceResourceGroup/providers/Microsoft.ContainerRegistry/registries/sourceRegistry
+Import an image from an Azure container registry in a different subscription.
+
+->az acr import --name azblobextract --source docker.io/library/ubuntu:18.04 --image ubuntu:18.04
